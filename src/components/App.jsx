@@ -34,15 +34,25 @@ class App extends Component {
     this.setState({ photo });
   };
 
+  handleLoadMore = () => {
+    this.setState({
+      isLoading: true,
+      page: this.state.page + 1
+    })
+    photoAPI
+      .fetchPhoto(this.state.photo, this.state.page + 1)
+      .then(data => this.setState({ result: [...this.state.result, ...data.hits], isLoading: false }));
+  }
+
   render() {
     const { result, isLoading} = this.state;
 
     return (
       <div className={s.App}>
         <Searchbar onSubmit={this.handleFormSubmit} />
-        {isLoading && <Loader />}
         <ImageGallery result={result} />
-        {result.length > 0 && <Button />}
+        {result.length > 0 && !isLoading && <Button onClick={this.handleLoadMore}/>}
+        {isLoading && <Loader />}
         <ToastContainer autoClose={3000} />
       </div>
     );
@@ -50,38 +60,3 @@ class App extends Component {
 };
 
 export default App;
-
-
-
-
-
-// import React, { Component } from 'react';
-// import Searchbar from './Searchbar';
-// import PhotoInfo from './PhotoInfo';
-// import Button from './Button';
-// import { ToastContainer } from 'react-toastify';
-// import 'react-toastify/dist/ReactToastify.css';
-// import s from './App.module.css';
-
-// class App extends Component {
-//   state = {
-//     photo: '',
-//   };
-  
-//   handleFormSubmit = photo => {
-//     this.setState({ photo });
-//   };
-
-//   render() {
-//     return (
-//       <div className={s.App}>
-//         <Searchbar onSubmit={this.handleFormSubmit} /> 
-//         <PhotoInfo photo={this.state.photo} />
-//         {this.state.photo && <Button />}        
-//         <ToastContainer autoClose={3000} />
-//       </div>
-//     );
-//   }
-// };
-
-// export default App;
