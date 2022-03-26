@@ -1,17 +1,87 @@
-export const App = () => {
-  return (
-    <div
-      style={{
-        height: '100vh',
-        display: 'flex',
-        justifyContent: 'center',
-        alignItems: 'center',
-        fontSize: 40,
-        textTransform: 'uppercase',
-        color: '#010101',
-      }}
-    >
-      React homework template
-    </div>
-  );
+import React, { Component } from 'react';
+import Loader from './Loader';
+import ImageGallery from './ImageGallery';
+import photoAPI from '../services/photoApi';
+import Searchbar from './Searchbar';
+import Button from './Button';
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+import s from './App.module.css';
+
+class App extends Component {
+  state = {
+    photo: '',
+    result: [],
+    isLoading: false,
+    page: 1
+  };
+
+  componentDidUpdate(prevProps, prevState) {
+    const {photo} = this.state;
+    const prevPhoto = prevState.photo;    
+
+    if (photo !== prevPhoto) {
+      this.setState({ isLoading: true, page: 1 });
+      setTimeout(() => {
+        photoAPI
+          .fetchPhoto(photo)
+          .then(data => this.setState({ result: data.hits, isLoading: false }))         
+      },2000);
+    }
+  }
+
+  handleFormSubmit = photo => {
+    this.setState({ photo });
+  };
+
+  render() {
+    const { result, isLoading} = this.state;
+
+    return (
+      <div className={s.App}>
+        <Searchbar onSubmit={this.handleFormSubmit} />
+        {isLoading && <Loader />}
+        <ImageGallery result={result} />
+        {result.length > 0 && <Button />}
+        <ToastContainer autoClose={3000} />
+      </div>
+    );
+  }
 };
+
+export default App;
+
+
+
+
+
+// import React, { Component } from 'react';
+// import Searchbar from './Searchbar';
+// import PhotoInfo from './PhotoInfo';
+// import Button from './Button';
+// import { ToastContainer } from 'react-toastify';
+// import 'react-toastify/dist/ReactToastify.css';
+// import s from './App.module.css';
+
+// class App extends Component {
+//   state = {
+//     photo: '',
+//   };
+  
+//   handleFormSubmit = photo => {
+//     this.setState({ photo });
+//   };
+
+//   render() {
+//     return (
+//       <div className={s.App}>
+//         <Searchbar onSubmit={this.handleFormSubmit} /> 
+//         <PhotoInfo photo={this.state.photo} />
+//         {this.state.photo && <Button />}        
+//         <ToastContainer autoClose={3000} />
+//       </div>
+//     );
+//   }
+// };
+
+// export default App;
