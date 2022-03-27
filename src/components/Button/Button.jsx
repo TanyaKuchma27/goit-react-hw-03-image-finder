@@ -1,4 +1,4 @@
-// import PropTypes from 'prop-types';
+import PropTypes from 'prop-types';
 import s from './Button.module.css';
 
 const Button = ({onClick}) => {
@@ -8,10 +8,8 @@ const Button = ({onClick}) => {
         </button>);
 };
 
-// ContactItem.propTypes = {
-//     name: PropTypes.string.isRequired,
-//     number: PropTypes.string.isRequired,        
-//     onDeleteContact: PropTypes.func.isRequired,
-// };
+Button.propTypes = {            
+    onClick: PropTypes.func.isRequired,
+};
 
 export default Button;
