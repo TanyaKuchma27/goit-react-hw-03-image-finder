@@ -4,7 +4,7 @@ import ImageGallery from './ImageGallery';
 import Button from './Button';
 import Loader from './Loader';
 import Modal from './Modal';
-import { ToastContainer } from 'react-toastify';
+import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import photoAPI from '../services/photoApi';
 import s from './App.module.css';
@@ -16,18 +16,38 @@ class App extends Component {
     isLoading: false,
     page: 1,
     modalPhoto: '',
-    showModal: false
+    showModal: false,
+    end: false
   };
 
-  componentDidUpdate(prevProps, prevState) {
+  async componentDidUpdate(prevProps, prevState) {
     const {photo} = this.state;
     const prevPhoto = prevState.photo;    
 
     if (photo !== prevPhoto) {
       this.setState({ isLoading: true, page: 1 });
-        photoAPI
-          .fetchPhoto(photo)
-          .then(data => this.setState({ result: data.hits, isLoading: false }))      
+      try {
+        const result = await photoAPI.fetchPhoto(photo);
+        const photos = result.hits;
+        const totalHits = result.totalHits;
+        const maxPage = Math.ceil(totalHits / 12);        
+
+        if (totalHits === 0) {
+          toast.error('Sorry, there are no images matching your search query. Please try again.');
+          this.setState({isLoading: false });
+          return;
+        };
+                
+        if (maxPage === 1) {
+          this.setState({ result: photos, isLoading: false, end: true });
+          toast("We're sorry, but you've reached the end of search results.");
+          return
+        }
+
+        this.setState({ result: photos, isLoading: false });
+      } catch(error) {
+          console.log(error);
+        }     
     }
   }
 
@@ -35,14 +55,27 @@ class App extends Component {
     this.setState({ photo });
   };
 
-  handleLoadMore = () => {
+  handleLoadMore = async() => {
     this.setState({
       isLoading: true,
       page: this.state.page + 1
     })
-    photoAPI
-      .fetchPhoto(this.state.photo, this.state.page + 1)
-      .then(data => this.setState({ result: [...this.state.result, ...data.hits], isLoading: false }));
+
+    try {
+      const result = await photoAPI.fetchPhoto(this.state.photo, this.state.page + 1);
+      const photos = result.hits;
+      const totalHits = result.totalHits;
+      const maxPage = Math.ceil(totalHits / 12);
+
+      if (maxPage === this.state.page) {
+        this.setState({ result: [...this.state.result, ...photos], isLoading: false, end: true });
+        toast("We're sorry, but you've reached the end of search results.");          
+      }
+
+      this.setState({ result: [...this.state.result, ...photos], isLoading: false });
+    } catch (error) {
+      console.log(error);
+      }
   };
 
   setModalPhoto = modalPhoto => {
@@ -56,7 +89,7 @@ class App extends Component {
   };
 
    render() {
-     const { photo, result, isLoading, showModal, modalPhoto } = this.state;
+     const { photo, result, isLoading, showModal, modalPhoto, end } = this.state;
 
     return (
       <div className={s.App}>
@@ -66,7 +99,7 @@ class App extends Component {
           setModalPhoto={this.setModalPhoto}
           openModal={this.toggleModal}
         />
-        {result.length > 0 && !isLoading && <Button onClick={this.handleLoadMore}/>}
+        {result.length > 0 && !isLoading && !end && <Button onClick={this.handleLoadMore}/>}
         {isLoading && <Loader />}
         {showModal && <Modal photo={photo} modalPhoto={modalPhoto} onClose={this.toggleModal}/>}
         <ToastContainer autoClose={3000} />
