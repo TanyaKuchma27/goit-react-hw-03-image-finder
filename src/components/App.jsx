@@ -44,7 +44,7 @@ class App extends Component {
           return
         }
 
-        this.setState({ result: photos, isLoading: false });
+        this.setState({ result: photos, isLoading: false, end: false });
       } catch(error) {
           console.log(error);
         }     
