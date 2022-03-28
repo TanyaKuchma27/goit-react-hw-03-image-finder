@@ -69,7 +69,8 @@ class App extends Component {
 
       if (maxPage === this.state.page) {
         this.setState({ result: [...this.state.result, ...photos], isLoading: false, end: true });
-        toast("We're sorry, but you've reached the end of search results.");          
+        toast("We're sorry, but you've reached the end of search results.");
+        return;          
       }
 
       this.setState({ result: [...this.state.result, ...photos], isLoading: false });
