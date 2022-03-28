@@ -5,9 +5,9 @@ import s from './ImageGallery.module.css';
 const ImageGallery = ({ result, setModalPhoto, openModal }) => {  
     return (
         <ul className={s.ImageGallery}>        
-            {result.map(({ id, webformatURL, largeImageURL, tags}) => (
+            {result.map(({ webformatURL, largeImageURL, tags}, index) => (
                 <ImageGalleryItem 
-                    key={id}
+                    key={index}
                     web={webformatURL}
                     large={largeImageURL}
                     tags={tags}
