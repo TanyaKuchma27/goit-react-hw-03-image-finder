@@ -3,7 +3,6 @@ import Searchbar from './Searchbar';
 import ImageGallery from './ImageGallery';
 import Button from './Button';
 import Loader from './Loader';
-import Modal from './Modal';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import photoAPI from '../services/photoApi';
@@ -14,9 +13,7 @@ class App extends Component {
     photo: '',
     result: [],
     isLoading: false,
-    page: 1,
-    modalPhoto: '',
-    showModal: false,
+    page: 1, 
     end: false
   };
 
@@ -71,32 +68,17 @@ class App extends Component {
     this.setState(prevState => ({
       page: prevState.page + 1,
     }));
-  }    
-
-  setModalPhoto = modalPhoto => {
-    this.setState({ modalPhoto });
-  };
-
-  toggleModal = () => {
-    this.setState(({ showModal }) => ({
-      showModal: !showModal,
-    }));
-  };
+  } 
 
   render() {
-    const { photo, result, isLoading, showModal, modalPhoto, end } = this.state;
-   
+    const { result, isLoading, end } = this.state;
+  
     return (
       <div className={s.App}>
         <Searchbar onSubmit={this.handleFormSubmit} />
-        <ImageGallery
-          result={result}
-          setModalPhoto={this.setModalPhoto}
-          openModal={this.toggleModal}
-        />
+        <ImageGallery result={result} />
         {result.length > 0 && !isLoading && !end && <Button onClick={this.handleLoadMore}/>}
-        {isLoading && <Loader />}
-        {showModal && <Modal photo={photo} modalPhoto={modalPhoto} onClose={this.toggleModal}/>}
+        {isLoading && <Loader />}        
         <ToastContainer autoClose={3000} />
       </div>
     );
