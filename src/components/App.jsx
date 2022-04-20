@@ -20,64 +20,58 @@ class App extends Component {
     end: false
   };
 
-  async componentDidUpdate(prevProps, prevState) {
-    const {photo} = this.state;
-    const prevPhoto = prevState.photo;    
+  async componentDidUpdate(_, prevState) {
+    const {photo, page} = this.state;
+    const prevPhoto = prevState.photo; 
+    const prevPage = prevState.page;    
 
-    if (photo !== prevPhoto) {
-      this.setState({ isLoading: true, page: 1 });
+    if (photo !== prevPhoto || page !== prevPage) {
+      this.setState({ isLoading: true });
       try {
-        const result = await photoAPI.fetchPhoto(photo);
+        const result = await photoAPI.fetchPhoto(photo, page);
         const photos = result.hits;
         const totalHits = result.totalHits;
         const maxPage = Math.ceil(totalHits / 12);        
 
         if (totalHits === 0) {
           toast.error('Sorry, there are no images matching your search query. Please try again.');
-          this.setState({isLoading: false });
           return;
         };
                 
         if (maxPage === 1) {
-          this.setState({ result: photos, isLoading: false, end: true });
+          this.setState({ result: photos, end: true });
           toast("We're sorry, but you've reached the end of search results.");
           return
-        }
+        };
 
-        this.setState({ result: photos, isLoading: false, end: false });
+        if (maxPage === this.state.page) {
+          this.setState({ result: [...this.state.result, ...photos], end: true });
+          toast("We're sorry, but you've reached the end of search results.");
+          return;          
+        };
+
+        this.setState({ result: [...this.state.result, ...photos], end: false });
       } catch(error) {
           console.log(error);
-        }     
+      } finally {
+        this.setState({isLoading: false });        
+      };   
     }
   }
 
   handleFormSubmit = photo => {
-    this.setState({ photo });
-  };
-
-  handleLoadMore = async() => {
     this.setState({
-      isLoading: true,
-      page: this.state.page + 1
+      photo: photo,
+      page: 1,
+      result: []
     })
-
-    try {
-      const result = await photoAPI.fetchPhoto(this.state.photo, this.state.page + 1);
-      const photos = result.hits;
-      const totalHits = result.totalHits;
-      const maxPage = Math.ceil(totalHits / 12);
-
-      if (maxPage === this.state.page) {
-        this.setState({ result: [...this.state.result, ...photos], isLoading: false, end: true });
-        toast("We're sorry, but you've reached the end of search results.");
-        return;          
-      }
-
-      this.setState({ result: [...this.state.result, ...photos], isLoading: false });
-    } catch (error) {
-      console.log(error);
-      }
   };
+
+  handleLoadMore = async () => {
+    this.setState(prevState => ({
+      page: prevState.page + 1,
+    }));
+  }    
 
   setModalPhoto = modalPhoto => {
     this.setState({ modalPhoto });
@@ -89,9 +83,9 @@ class App extends Component {
     }));
   };
 
-   render() {
-     const { photo, result, isLoading, showModal, modalPhoto, end } = this.state;
-
+  render() {
+    const { photo, result, isLoading, showModal, modalPhoto, end } = this.state;
+   
     return (
       <div className={s.App}>
         <Searchbar onSubmit={this.handleFormSubmit} />
